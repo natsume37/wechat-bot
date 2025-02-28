@@ -1,5 +1,6 @@
 # wechat-bot
 微信公众号
+基于werobot库的菜鸟练习项目
 菜单栏json:
 ```json
 {
