@@ -40,7 +40,7 @@ class DeepSeekAPI:
 
 # 使用示例
 if __name__ == "__main__":
-    api_key = "sk-d29649ae24f94bff94aad53206631d8d"
+    api_key = "sk-"
     deepseek = DeepSeekAPI(api_key)
 
     # 获取模型列表
