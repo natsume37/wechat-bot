@@ -10,7 +10,7 @@
 """
 import werobot
 from conf.config import *
-from api.deepseek import DeepSeekAPI
+from api1.deepseek import DeepSeekAPI
 
 robot = werobot.WeRoBot(token='martin')
 config = configparser.ConfigParser.read("./config.ini")
@@ -29,19 +29,20 @@ def subscribe(message):
     return '欢迎关注Martin的成长日记！'
 
 
-def deepseekAPI(DEEPSEEK_KEY):
-    response = DeepSeekAPI(DEEPSEEK_KEY)
+def deepseek_response(deepseek_key):
+    response = DeepSeekAPI(deepseek_key)
     return response.generate_text()
 
 
 @robot.text
-def echo(message):
+def echo(message, deepseek_key=None):
     """
     文本类型回复函数，接入deepseek
+    :param deepseek_key:
     :param message:
     :return:
     """
-    return deepseekAPI()
+    return deepseek_response(deepseek_key)
 
 
 @robot.unknown_event
@@ -50,7 +51,7 @@ def none(message):
     未知类型
     :return:
     """
-    return "目前小丁正在学习中！请换个问题吧！"
+    return "目前Martin正在学习中！请换个问题吧！"
 
 
 @robot.image
@@ -74,11 +75,11 @@ def handle_click(event):
     if event.key == 'V1001_TODAY_NEWS':
         return '你点击了菜单1'
     # 点击每日一言事件
-    elif event.key == 'V1001_TODAY_ONESEY':
+    elif event.key == 'V1001_TODAY_ENGLISH':
         return '你点击了菜单2'
     # 点击点赞按钮
     elif event.key == 'V1001_GOOD':
-        return '你点击了菜单2'
+        return '感谢你的认可'
     # 未知菜单事件
     else:
         return '未知菜单'

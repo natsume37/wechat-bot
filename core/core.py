@@ -9,6 +9,7 @@
 @Desc    ：文件描述
 """
 from event import robot
+
 # 自定义菜单
 client = robot.client
 client.create_menu({
@@ -45,5 +46,6 @@ client.create_menu({
         }
     ]}
 )
-
-
+# import api
+# if __name__ == '__main__':
+#     # 调用新闻接口
