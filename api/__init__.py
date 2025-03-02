@@ -13,9 +13,12 @@
 # 从各个模块中导入功能
 from .deepseekAPI import DeepSeekAPI
 from .news import NewsApi
+from .session_manage import Session, SessionManager
 
 # 可选：定义 __all__，明确暴露的接口
 __all__ = [
     "DeepSeekAPI",
     "NewsApi",
+    "Session",
+    "SessionManager"
 ]
