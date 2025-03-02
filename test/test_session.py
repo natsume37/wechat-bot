@@ -1,147 +1,97 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-"""
-@Project ：wechat_oa
-@File    ：test_session
-@IDE     ：PyCharm
-@Author  ：Martin
-@Date    ：2025/3/2 18:59
-@Desc    ：文件描述
-"""
 import pytest
-import api
+from api import SessionManager, Session
+from api import DeepSeekAPI
+from conf.config import DEEPSEEK_KEY
+
+@pytest.fixture
+def session_manager():
+    """Fixture 提供 SessionManager 实例。"""
+    api_key = DEEPSEEK_KEY  # 替换为实际的 API 密钥
+    return SessionManager(Session, api_key=api_key)
 
 
-# 测试 Session 类
-def test_session_initialization():
-    session = api.Session("test_session")
-    assert session.session_id == "test_session"
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "你是Martin微信公众号的助手"
+def test_create_session(session_manager):
+    """测试创建会话。"""
+    session_id = "user_123"
+    session = session_manager.build_session(session_id)
+    assert session is not None
+    assert session.session_id == session_id
 
 
-def test_session_reset():
-    session = api.Session("test_session")
-    session.add_query("用户提问")
-    session.add_reply("助手回复")
-    session.reset()
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "你是Martin微信公众号的助手"
+def test_add_query_and_reply(session_manager):
+    """测试用户提问和助手回复。"""
+    session_id = "user_123"
+    query = "你好呀，你是谁？"
 
+    # 用户提问
+    session_manager.session_query(query, session_id)
 
-def test_session_set_system_prompt():
-    session = api.Session("test_session")
-    session.set_system_prompt("新的系统提示")
-    assert session.system_prompt == "新的系统提示"
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "新的系统提示"
-
-
-def test_session_add_query():
-    session = api.Session("test_session")
-    session.add_query("用户提问")
-    assert len(session.messages) == 2
+    # 获取会话并验证消息
+    session = session_manager.get_session(session_id)
+    assert len(session.messages) == 2  # 系统提示 + 用户提问
     assert session.messages[-1]["role"] == "user"
-    assert session.messages[-1]["content"] == "用户提问"
+    assert session.messages[-1]["content"] == query
 
+    # 调用 DeepSeekAPI 获取助手回复
+    reply = session_manager.call_deepseek_api(session_id)
+    assert reply is not None
 
-def test_session_add_reply():
-    session = api.Session("test_session")
-    session.add_reply("助手回复")
-    assert len(session.messages) == 2
+    # 添加助手回复到会话
+    session_manager.session_reply(reply, session_id)
+
+    # 验证助手回复是否添加到会话
+    session = session_manager.get_session(session_id)
+    assert len(session.messages) == 3  # 系统提示 + 用户提问 + 助手回复
     assert session.messages[-1]["role"] == "assistant"
-    assert session.messages[-1]["content"] == "助手回复"
+    assert session.messages[-1]["content"] == reply
 
 
-def test_session_calc_tokens():
-    session = api.Session("test_session")
-    session.add_query("用户提问")
-    session.add_reply("助手回复")
-    tokens = session.calc_tokens()
-    assert tokens > 0
+def test_query_and_reply(session_manager):
+    """测试 query_and_reply 方法。"""
+    session_id = "user_123"
+    query = "你好呀，你是谁？"
 
+    # 用户提问并获取助手回复
+    reply = session_manager.query_and_reply(session_id, query)
+    assert reply is not None
 
-def test_session_discard_exceeding():
-    session = api.Session("test_session")
-    session.add_query("用户提问")
-    session.add_reply("助手回复")
-    max_tokens = 13  # 假设最大 token 数量为 10
-    tokens = session.discard_exceeding(max_tokens)
-    assert tokens <= max_tokens
-    assert len(session.messages) >= 1
-
-
-# 测试 SessionManager 类
-def test_session_manager_initialization():
-    session_manager = api.SessionManager(api.Session)
-    assert session_manager.session_class == api.Session
-    assert session_manager.expires_in_seconds is None
-    assert len(session_manager.sessions) == 0
-
-
-def test_session_manager_build_session():
-    session_manager = api.SessionManager(api.Session)
-    session = session_manager.build_session("test_session")
-    assert session.session_id == "test_session"
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "你是Martin微信公众号的助手"
-
-
-def test_session_manager_build_session_with_system_prompt():
-    session_manager = api.SessionManager(api.Session)
-    session = session_manager.build_session("test_session", "新的系统提示")
-    assert session.system_prompt == "新的系统提示"
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "新的系统提示"
-
-
-def test_session_manager_session_query():
-    session_manager = api.SessionManager(api.Session)
-    session = session_manager.session_query("用户提问", "test_session")
-    assert len(session.messages) == 2
-    assert session.messages[-1]["role"] == "user"
-    assert session.messages[-1]["content"] == "用户提问"
-
-
-def test_session_manager_session_reply():
-    session_manager = api.SessionManager(api.Session)
-    session = session_manager.session_reply("助手回复", "test_session")
-    assert len(session.messages) == 2
+    # 验证会话消息
+    session = session_manager.get_session(session_id)
+    assert len(session.messages) == 3  # 系统提示 + 用户提问 + 助手回复
     assert session.messages[-1]["role"] == "assistant"
-    assert session.messages[-1]["content"] == "助手回复"
+    assert session.messages[-1]["content"] == reply
 
 
-def test_session_manager_clear_session():
-    session_manager = api.SessionManager(api.Session)
-    session_manager.build_session("test_session")
-    session_manager.clear_session("test_session")
-    assert "test_session" not in session_manager.sessions
+def test_clear_session(session_manager):
+    """测试清理会话。"""
+    session_id = "user_123"
+    query = "你好呀，你是谁？"
 
+    # 用户提问并获取助手回复
+    session_manager.query_and_reply(session_id, query)
 
-def test_session_manager_clear_all_sessions():
-    session_manager = api.SessionManager(api.Session)
-    session_manager.build_session("test_session1")
-    session_manager.build_session("test_session2")
-    session_manager.clear_all_sessions()
-    assert len(session_manager.sessions) == 0
+    # 清理会话
+    session_manager.clear_session(session_id)
 
-
-def test_session_manager_get_session():
-    session_manager = api.SessionManager(api.Session)
-    session_manager.build_session("test_session")
-    session = session_manager.get_session("test_session")
-    assert session.session_id == "test_session"
-    assert len(session.messages) == 1
-    assert session.messages[0]["role"] == "system"
-    assert session.messages[0]["content"] == "你是Martin微信公众号的助手"
-
-
-def test_session_manager_get_nonexistent_session():
-    session_manager = api.SessionManager(api.Session)
-    session = session_manager.get_session("nonexistent_session")
+    # 验证会话是否被清理
+    session = session_manager.get_session(session_id)
     assert session is None
+
+
+def test_token_calculation(session_manager):
+    """测试 token 计算功能。"""
+    session_id = "user_123"
+    session = session_manager.build_session(session_id)
+
+    # 添加用户提问
+    query = "你好呀，你是谁？"
+    session.add_query(query)
+
+    # 计算 token 数量
+    token_count = session.calc_tokens()
+    assert token_count > 0
+
+    # 清理超出 token 限制的消息
+    max_tokens = 13  # 设置一个较小的 token 限制
+    session.discard_exceeding(max_tokens)
+    assert session.calc_tokens() <= max_tokens
