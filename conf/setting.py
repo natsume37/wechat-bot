@@ -1,69 +1,82 @@
 import logging
 import logging.config
-import os.path
+import os
 
 # 路径配置
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # 项目根目录
-INFO_LOG_DIR = os.path.join(BASE_DIR, "log", 'info.log')
-ERROR_LOG_DIR = os.path.join(BASE_DIR, "log", 'error.log')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根目录
+LOG_DIR = os.path.join(BASE_DIR, "log")  # 日志目录
+INFO_LOG_PATH = os.path.join(LOG_DIR, "info.log")  # 信息日志路径
+ERROR_LOG_PATH = os.path.join(LOG_DIR, "error.log")  # 错误日志路径
 
-LOGGING_DIC = {
-    'version': 1.0,
+USER_DIR = os.path.join(BASE_DIR, 'db', 'users')  # 用户目录
+FILE_DIR = os.path.join(BASE_DIR, 'db', 'files')  # 文件目录
+
+# 确保日志目录存在
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+LEVEL = 'DEBUG'
+
+# 日志配置字典
+LOGGING_CONFIG = {
+    'version': 1,
     'disable_existing_loggers': False,
     # 日志格式
     'formatters': {
         'standard': {
-            'format': '%(asctime)s %(threadName)s:%(thread)d [%(name)s] %(levelname)s [%(pathname)s:%(lineno)d] %(message)s',
+            'format': '%(asctime)s [%(name)s] %(levelname)s [%(filename)s:%(lineno)d] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'simple': {
             'format': '%(asctime)s [%(name)s] %(levelname)s %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
-        'test': {
-            'format': '%(asctime)s %(message)s',
-        },
     },
-    'filters': {},
     # 日志处理器
     'handlers': {
-        'console_debug_handler': {
-            'level': 'DEBUG',  # 日志处理的级别限制
-            'class': 'logging.StreamHandler',  # 输出到终端
-            'formatter': 'simple'  # 日志格式
+        'console': {
+            'level': LEVEL,
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
-        'file_info_handler': {
+        'file_info': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件,日志轮转
-            'filename': 'user.log',
-            'maxBytes': 1024 * 1024 * 10,  # 日志大小 10M
-            'backupCount': 10,  # 日志文件保存数量限制
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': INFO_LOG_PATH,
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 5,  # 保留5个备份文件
             'encoding': 'utf-8',
             'formatter': 'standard',
         },
-        'file_debug_handler': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',  # 保存到文件
-            'filename': 'log/test.log',  # 日志存放的路径
-            'encoding': 'utf-8',  # 日志文件的编码
-            'formatter': 'test',
+        'file_error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ERROR_LOG_PATH,
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 5,  # 保留5个备份文件
+            'encoding': 'utf-8',
+            'formatter': 'standard',
         },
     },
     # 日志记录器
     'loggers': {
-        'logger1': {  # 导入时logging.getLogger时使用的app_name
-            'handlers': ['console_debug_handler'],  # 日志分配到哪个handlers中
-            'level': 'DEBUG',  # 日志记录的级别限制
-            'propagate': False,  # 默认为True，向上（更高级别的logger）传递，设置为False即可，否则会一份日志向上层层传递
+        '': {  # 根日志记录器，捕获所有未明确配置的日志
+            'handlers': ['console', 'file_info'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
-        'logger2': {
-            'handlers': ['console_debug_handler', 'file_debug_handler'],
-            'level': 'INFO',
+        'error_logger': {  # 错误日志记录器
+            'handlers': ['file_error'],
+            'level': 'ERROR',
             'propagate': False,
         },
     }
 }
 
-logging.config.dictConfig(LOGGING_DIC)
+# 应用日志配置
+logging.config.dictConfig(LOGGING_CONFIG)
 
-logger2 = logging.getLogger('logger2')
+# 获取日志记录器
+logger2 = logging.getLogger('server')  # 用于应用日志
+error_logger = logging.getLogger('error_logger')  # 用于错误日志
+asyncio_logger = logging.getLogger('asyncio')  # 用于asyncio错误日志

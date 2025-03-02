@@ -83,3 +83,15 @@ def handle_click(event):
     # 未知菜单事件
     else:
         return '未知菜单'
+
+
+
+# 处理文本消息
+@robot.text
+def echo(message):
+    """
+    获取用户的openID
+    :param message:
+    :return:
+    """
+    return message.source

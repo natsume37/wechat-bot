@@ -46,6 +46,9 @@ client.create_menu({
         }
     ]}
 )
+
+# 获取用户ID
+
 # import api
 # if __name__ == '__main__':
 #     # 调用新闻接口
