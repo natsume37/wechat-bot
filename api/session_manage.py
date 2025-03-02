@@ -12,6 +12,7 @@ from conf.setting import logger2
 from typing import Dict, Optional, Type, List
 from collections import defaultdict
 import tiktoken  # 用于计算 token 数量
+from .deepseekAPI import DeepSeekAPI  # 导入 DeepSeekAPI
 
 
 class SessionManager:
@@ -19,16 +20,19 @@ class SessionManager:
     会话管理器，用于管理多个会话（Session 实例）。
     """
 
-    def __init__(self, session_class: Type['Session'], expires_in_seconds: Optional[int] = None):
+    def __init__(self, session_class: Type['Session'], expires_in_seconds: Optional[int] = None,
+                 api_key: Optional[str] = None):
         """
         初始化 SessionManager。
 
         :param session_class: 会话类（必须是 Session 或其子类）。
         :param expires_in_seconds: 会话过期时间（秒），如果为 None，则会话不会过期。
+        :param api_key: DeepSeekAPI 的 API 密钥。
         """
         self.session_class = session_class
         self.sessions: Dict[str, 'Session'] = defaultdict(lambda: None)  # 存储会话的字典
         self.expires_in_seconds = expires_in_seconds
+        self.api_key = api_key  # 保存 API 密钥
 
     def build_session(self, session_id: str, system_prompt: Optional[str] = None) -> 'Session':
         """
@@ -104,6 +108,56 @@ class SessionManager:
         """
         return self.sessions.get(session_id)
 
+    def call_deepseek_api(self, session_id: str) -> Optional[str]:
+        """
+        调用 DeepSeekAPI 并处理请求和响应。
+
+        :param session_id: 会话的唯一标识。
+        :return: 助手的回复内容，如果请求失败则返回 None。
+        """
+        session = self.get_session(session_id)
+        if not session:
+            logger2.error(f"会话不存在: session_id={session_id}")
+            return None
+
+        # 初始化 DeepSeekAPI
+        deepseek_api = DeepSeekAPI(uid=session_id, api_key=self.api_key, messages=session.messages)
+
+        # 发送请求并获取响应
+        response = deepseek_api.get_response()
+        if not response:
+            logger2.error(f"DeepSeekAPI 请求失败: session_id={session_id}")
+            return None
+
+        # 提取助手的回复内容
+        try:
+            reply = response['choices'][0]['message']['content']
+            logger2.debug(f"DeepSeekAPI 响应成功: session_id={session_id}, reply={reply}")
+            return reply
+        except KeyError:
+            logger2.error(f"DeepSeekAPI 响应解析失败: session_id={session_id}, response={response}")
+            return None
+
+    def query_and_reply(self, session_id: str, query: str) -> Optional[str]:
+        """
+        用户提问并获取助手的回复。
+
+        :param session_id: 会话的唯一标识。
+        :param query: 用户提问内容。
+        :return: 助手的回复内容，如果请求失败则返回 None。
+        """
+        # 添加用户提问到会话
+        self.session_query(query, session_id)
+
+        # 调用 DeepSeekAPI 获取回复
+        reply = self.call_deepseek_api(session_id)
+        if not reply:
+            return None
+
+        # 添加助手回复到会话
+        self.session_reply(reply, session_id)
+        return reply
+
 
 class Session:
     def __init__(self, session_id: str):
@@ -155,27 +209,23 @@ class Session:
 
 # 示例使用
 if __name__ == '__main__':
-    # 初始化 SessionManager
-    session_manager = SessionManager(Session)
+    # 初始化 SessionManager，传入 API 密钥
+    api_key = "your_deepseek_api_key"  # 替换为实际的 API 密钥
+    session_manager = SessionManager(Session, api_key=api_key)
 
     # 创建或获取一个会话
     session_id = "user_123"
-    session = session_manager.build_session(session_id)
+    session_manager.build_session(session_id)
 
-    # 添加用户提问
-    session_manager.session_query("你好呀，你是谁？", session_id)
+    # 用户提问并获取助手的回复
+    query = "你好呀，你是谁？"
+    reply = session_manager.query_and_reply(session_id, query)
 
-    # 添加助手回复
-    session_manager.session_reply("你好！我是Martin微信公众号的助手。", session_id)
+    if reply:
+        print(f"助手的回复: {reply}")
+    else:
+        print("请求失败，请检查日志。")
 
     # 打印当前会话的消息
+    session = session_manager.get_session(session_id)
     print("当前会话消息:", session.messages)
-
-    # 清理超出 token 限制的消息
-    max_tokens = 50  # 假设最大 token 数量为 50
-    session.discard_exceeding(max_tokens)
-    print("清理后的会话消息:", session.messages)
-
-    # 清理会话
-    session_manager.clear_session(session_id)
-    print(f"会话 {session_id} 已清理。")
