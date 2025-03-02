@@ -10,7 +10,7 @@
 """
 import werobot
 from conf.config import *
-from api1.deepseek import DeepSeekAPI
+import api
 
 robot = werobot.WeRoBot(token='martin')
 config = configparser.ConfigParser.read("./config.ini")
@@ -30,8 +30,8 @@ def subscribe(message):
 
 
 def deepseek_response(deepseek_key):
-    response = DeepSeekAPI(deepseek_key)
-    return response.generate_text()
+    response = api.DeepSeekAPI(deepseek_key)
+    return response.get_response()
 
 
 @robot.text
@@ -83,7 +83,6 @@ def handle_click(event):
     # 未知菜单事件
     else:
         return '未知菜单'
-
 
 
 # 处理文本消息
