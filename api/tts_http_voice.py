@@ -11,6 +11,7 @@ import requests
 
 from conf.config import config
 
+
 class TextToSpeech:
     def __init__(self, text_to_voice):
         self.text_to_voice = text_to_voice
@@ -62,6 +63,7 @@ class TextToSpeech:
                 print("Failed to generate speech.")
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
 if __name__ == '__main__':
     # 示例用法
