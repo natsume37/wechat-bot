@@ -38,6 +38,10 @@ class NewsApi:
             logger2.debug(f"请求失败: {e}")
             return None
 
+    # TODO 把json提取成文本
+    def text_news(self):
+        res_json = self.hot_news()
+
     def everyday_english(self):
         """
         获取每日英语

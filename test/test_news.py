@@ -8,15 +8,12 @@
 @Date    ：2025/2/28 23:10
 @Desc    ：新闻接口
 """
-import sys
 
-import requests
 from conf.config import NEWS_KEY
 
-sys.path.append("../config.ini")
 import api
 
-# 实例化并调用\
+# 实例化并调用
 if __name__ == '__main__':
     news_api = api.NewsApi(NEWS_KEY)
     hot_news_data = news_api.hot_news()
