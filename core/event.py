@@ -29,8 +29,10 @@ def subscribe(message):
     return '欢迎关注Martin的成长日记！'
 
 
-def deepseek_response(deepseek_key):
-    response = api.DeepSeekAPI(deepseek_key)
+# deepseek会话处理
+def deepseek_response(openID, api_key, msg):
+    # 会话管理
+    response = api.DeepSeekAPI(openID, )
     return response.get_response()
 
 
@@ -42,6 +44,7 @@ def echo(message, deepseek_key=None):
     :param message:
     :return:
     """
+    uid = message.source
     return deepseek_response(deepseek_key)
 
 
@@ -63,6 +66,13 @@ def img(message):
     return "目前暂不支持图片幺，因为技术菜！请发送文本信息"
 
 
+def click_news(new_key):
+    """
+     # 新闻内存排版重组
+    """
+    pass
+
+
 # 点击事件
 @robot.click
 def handle_click(event):
@@ -73,6 +83,7 @@ def handle_click(event):
     """
     # 点击新闻按钮事件
     if event.key == 'V1001_TODAY_NEWS':
+        news = api.NewsApi(NEWS_KEY)
         return '你点击了菜单1'
     # 点击每日一言事件
     elif event.key == 'V1001_TODAY_ENGLISH':
