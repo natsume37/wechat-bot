@@ -9,6 +9,7 @@
 @Desc    ：事件函数
 """
 import werobot
+from werobot.replies import VoiceReply
 from typing import Optional
 from api import SessionManager, Session, ask_deepseek, TextToSpeech
 from conf.config import *
@@ -16,7 +17,7 @@ import api
 from conf.setting import logger2
 
 robot = werobot.WeRoBot(token='martin')
-config = configparser.ConfigParser.read(config_path)
+# config = configparser.ConfigParser.read(config_path)
 
 robot.config["APP_ID"] = WECHAT_APP_ID
 robot.config["APP_SECRET"] = WECHAT_APPSECRET
@@ -78,20 +79,27 @@ def replay_form_deepseek(session_id, user_query):
 # 语音回复
 @robot.voice
 def replay_voice(message):
-    # 获取微信翻译好的语音文本、不确定真的假的、文档是这样写的
-    recognition = message.recognition
-    # deepseek回复
-    deepseek_response = replay_form_deepseek(message.source, recognition)
-
-    # 语音合成
-    tts_voice = TextToSpeech(deepseek_response)
-    # 上传语音文件并获取 MediaId
-    with open(voice_path, 'rb') as f:
-        media_info = robot.client.upload_media("voice", f)
-        media_id = media_info["media_id"]
-    # 返回语音回复
-    return werobot.replies.VoiceReply(message, media_id=media_id)
-
+    try:
+        # 获取微信翻译好的语音文本、不确定真的假的、文档是这样写的
+        recognition = message.recognition
+        # deepseek回复
+        deepseek_response = replay_form_deepseek(message.source, recognition)
+        # 语音合成
+        tts_voice = TextToSpeech(deepseek_response).generate_speech(voice_path)
+        logger2.debug("语音合成成功")
+        if tts_voice:
+            # logger2.debug(tts_voice)
+            # logger2.debug("上传ID")
+            # 上传语音文件并获取 MediaId
+            with open(voice_path, 'rb') as f:
+                media_info = robot.client.upload_media("voice", f)
+                media_id = media_info["media_id"]
+            # logger2.debug("音频id上传成功")
+            # 返回语音回复
+            return VoiceReply(message, media_id=media_id)
+    except Exception as e:
+        logger2.info(e)
+        return "语音回复失败"
 #
 # @robot.unknown_event
 # def none(message):

@@ -12,7 +12,7 @@ from core.event import robot
 
 # 自定义菜单
 client = robot.client
-client.create_menu({
+"""client.create_menu({
     "button": [
         {
             "type": "click",
@@ -45,7 +45,7 @@ client.create_menu({
             ]
         }
     ]}
-)
+)"""
 
 # 获取用户ID
 
