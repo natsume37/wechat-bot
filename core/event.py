@@ -41,7 +41,7 @@ def subscribe(message):
 
 
 @robot.text
-def echo(message, deepseek_key=None):
+def echo(message):
     """
     文本类型回复函数，接入deepseek
     :param deepseek_key:
@@ -51,7 +51,13 @@ def echo(message, deepseek_key=None):
     # uid = message.source
     # return deepseek_response(deepseek_key)
     # 暂时仅支持语音
-    return "暂时仅支持语音"
+    try:
+        recognition = message.recognition
+        # deepseek回复
+        deepseek_response = replay_form_deepseek(message.source, recognition)
+        return deepseek_response
+    except:
+        return "网络出现问题、请稍后再试吧。"
 
 
 def replay_form_deepseek(session_id, user_query):
