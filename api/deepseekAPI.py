@@ -1,5 +1,5 @@
 import requests
-
+from conf.config import DEEPSEEK_KEY
 # 没用、代码
 messages = [
     {
@@ -8,7 +8,7 @@ messages = [
     },
     {
         "role": "user",
-        "content": "你好呀"
+        "content": "你好呀，你叫什么名字？"
     }
 ]
 
@@ -50,7 +50,7 @@ class DeepSeekAPI:
 
 if __name__ == '__main__':
     # 使用示例
-    api = DeepSeekAPI(uid="12345", api_key="", messages=messages)
+    api = DeepSeekAPI(uid="12345", api_key=DEEPSEEK_KEY, messages=messages)
     response = api.get_response()
     if response:
         print(response)

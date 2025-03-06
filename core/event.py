@@ -52,11 +52,12 @@ def echo(message):
     # return deepseek_response(deepseek_key)
     # 暂时仅支持语音
     try:
-        recognition = message.recognition
+        recognition = message.content
         # deepseek回复
         deepseek_response = replay_form_deepseek(message.source, recognition)
         return deepseek_response
-    except:
+    except Exception as e:
+        logger2.info(e)
         return "网络出现问题、请稍后再试吧。"
 
 

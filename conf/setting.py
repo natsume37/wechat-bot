@@ -15,7 +15,7 @@ FILE_DIR = os.path.join(BASE_DIR, 'db', 'files')  # 文件目录
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
-LEVEL = 'DEBUG'
+LEVEL = 'INFO'
 
 # 日志配置字典
 LOGGING_CONFIG = {
