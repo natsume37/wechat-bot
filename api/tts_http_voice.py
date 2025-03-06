@@ -9,10 +9,12 @@ import json
 import uuid
 import requests
 
-from conf.config import config
+from conf.config import config, voice_path
+from conf.setting import logger2
 
 
 class TextToSpeech:
+
     def __init__(self, text_to_voice):
         self.text_to_voice = text_to_voice
         self.app_id = config.get('huosan', 'AppID')
@@ -24,7 +26,7 @@ class TextToSpeech:
         self.api_url = f"https://{self.host}/api/v1/tts"
         self.header = {"Authorization": f"Bearer;{self.access_token}"}
 
-    def generate_speech(self, output_file="output.mp3"):
+    def generate_speech(self, output_file=voice_path):
         request_json = {
             "app": {
                 "appid": self.app_id,
@@ -53,16 +55,19 @@ class TextToSpeech:
 
         try:
             resp = requests.post(self.api_url, json.dumps(request_json), headers=self.header)
-            print(f"resp body: \n{resp.json()}")
+            logger2.debug(f"resp body: \n{resp.json()}")
             if "data" in resp.json():
                 data = resp.json()["data"]
                 with open(output_file, "wb") as file_to_save:
                     file_to_save.write(base64.b64decode(data))
-                print(f"Speech saved to {output_file}")
+                logger2.debug(f"Speech saved to {output_file}")
+                return True
             else:
-                print("Failed to generate speech.")
+                logger2.debug("Failed to generate speech.")
+                return None
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger2.debug(f"An error occurred: {e}")
+            return None
 
 
 if __name__ == '__main__':

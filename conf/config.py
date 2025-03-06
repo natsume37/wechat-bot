@@ -16,6 +16,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 构建配置文件的绝对路径
 config_path = os.path.join(project_root, 'config.ini')
+voice_path = os.path.join(project_root, 'output.mp3')
 config = configparser.ConfigParser()
 config.read(config_path,encoding='utf-8')
 WECHAT_APP_ID = config.get('wechat', 'AppID')
@@ -23,4 +24,4 @@ WECHAT_APPSECRET = config.get('wechat', 'AppSecret')
 DEEPSEEK_KEY = config.get('deepseek', 'DeepSeekKey')
 NEWS_KEY = config.get('newsapi', 'news-key')
 
-
+DEEPSEEK_PROMPT = config.get("deepseek","System_prompt")

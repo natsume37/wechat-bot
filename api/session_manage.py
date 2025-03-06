@@ -159,15 +159,20 @@ class SessionManager:
         return reply
 
 
+from conf.config import DEEPSEEK_PROMPT
+
+
 class Session:
+
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.messages: List[Dict[str, str]] = []
+        self.prompt = DEEPSEEK_PROMPT
         self.reset()
 
     def reset(self):
         """重置会话，只保留系统提示。"""
-        self.messages = [{"role": "system", "content": "你是Martin微信公众号的助手"}]
+        self.messages = [{"role": "system", "content": DEEPSEEK_PROMPT}]
 
     def set_system_prompt(self, system_prompt: str):
         """设置系统提示并重置会话。"""
@@ -205,6 +210,20 @@ class Session:
         for message in self.messages:
             total_tokens += len(encoding.encode(message["content"]))
         return total_tokens
+
+
+def ask_deepseek(session_manager: SessionManager, session_id: str, query: str) -> Optional[str]:
+    """
+    向 DeepSeek 发起提问并获取回复。
+
+    :param session_manager: SessionManager 实例，用于管理会话。
+    :param session_id: 会话的唯一标识。
+    :param query: 用户提问内容。
+    :return: 助手的回复内容，如果请求失败则返回 None。
+    """
+    # 使用 SessionManager 的 query_and_reply 方法处理提问和获取回复
+    reply = session_manager.query_and_reply(session_id, query)
+    return reply
 
 
 # 示例使用
