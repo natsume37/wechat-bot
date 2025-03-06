@@ -8,7 +8,7 @@
 @Date    ：2025/2/26 16:53
 @Desc    ：文件描述
 """
-from event import robot
+from core.event import robot
 
 # 自定义菜单
 client = robot.client
