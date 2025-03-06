@@ -16,7 +16,7 @@ import api
 from conf.setting import logger2
 
 robot = werobot.WeRoBot(token='martin')
-config = configparser.ConfigParser.read("./config.ini")
+config = configparser.ConfigParser.read(config_path)
 
 robot.config["APP_ID"] = WECHAT_APP_ID
 robot.config["APP_SECRET"] = WECHAT_APPSECRET
