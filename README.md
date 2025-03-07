@@ -15,5 +15,7 @@
 
 效果展示：
 
-![image-20250307212925500](data/效果图1.jpg)
+
+
+<img src="data/效果图1.jpg" width= 70%>
 
