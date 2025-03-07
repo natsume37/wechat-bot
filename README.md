@@ -1,40 +1,19 @@
 # wechat-bot
-微信公众号
-基于werobot库的菜鸟练习项目
-菜单栏json:
-```json
-{
-    "button":[
-        {
-            "type":"click",
-            "name":"今日新闻",
-            "key":"V1001_TODAY_NEWS"
-        },
-        {
-            "type":"click",
-            "name":"每日英语",
-            "key":"V1001_TODAY_ENGLISH"
-        },
-        {
-            "name":"菜单",
-            "sub_button":[
-                {
-                    "type":"view",
-                    "name":"搜索",
-                    "url":"http://www.soso.com/"
-                },
-                {
-                    "type":"view",
-                    "name":"视频",
-                    "url":"http://v.qq.com/"
-                },
-                {
-                    "type":"click",
-                    "name":"赞一下我们",
-                    "key":"V1001_GOOD"
-                }
-            ]
-        }
-    ]
-}
-```
+### 基于werobot的微信公众号开发项目
+采用deepseek以及TTS接口、实现语音回复以及角色设定
+
+> 注意：由于微信公众号后台对信息的5s限制，导致语音回复语音大概率失败。超时信息无法回复。个人公众号没有客服接口权限暂时没有很好的处理方法
+
+功能展示
+
+- [x] 短内容语音回复
+- [x] 文本回复
+- [ ] 会话管理
+- [ ] 新闻接口
+
+
+
+效果展示：
+
+![image-20250307212925500](data/效果图1.jpg)
+
