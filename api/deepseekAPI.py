@@ -24,7 +24,7 @@ class DeepSeekAPI:
             "model": "deepseek-ai/DeepSeek-V3",
             "messages": self.messages,
             "stream": False,
-            "temperature": 1.5,
+            "temperature": 1.2,
             "max_tokens": 300,
         }
         self.headers = {
